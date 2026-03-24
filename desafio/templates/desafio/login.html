@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | BASEU Challenge</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .login-container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-card input {
+            margin-bottom: 1.5rem;
+            width: 100%;
+            padding: 1rem;
+            background: #09090a;
+            border: 1px solid #323238;
+            color: white;
+            border-radius: 0.5rem;
+            box-sizing: border-box;
+        }
+        .login-card input:focus {
+            border-color: var(--neon-green);
+            outline: none;
+            box-shadow: var(--neon-glow);
+        }
+        .error-msg {
+            color: #ff4d4d;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="login-container">
+
+    <div class="login-card card glass">
+        <h1 class="neon-title" style="font-size: 1.8rem; margin-bottom: 2rem;">BASEU ACCESS</h1>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <p class="error-msg">Usuário ou senha incorretos.</p>
+            {% endif %}
+
+            <div class="input-box">
+                <input type="text" name="username" placeholder="Seu usuário" required>
+            </div>
+
+            <div class="input-box">
+                <input type="password" name="password" placeholder="Sua senha" required>
+            </div>
+
+            <button type="submit" class="btn-neon">ENTRAR NO DESAFIO</button>
+        </form>
+    </div>
+
+</body>
+</html>

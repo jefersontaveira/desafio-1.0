@@ -1,0 +1,164 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASEU | Neon Challenge</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <header>
+        <h1 class="neon-title">DESAFIO 1.0</h1>
+        <div class="user-badge">
+            Atleta: <strong>{{ user.username }}</strong> |
+            <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    [ Sair ]
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <main class="container">
+
+        {% if ranking %}
+            <div class="winner-box">
+                <span>👑 LÍDER ATUAL: <strong>{{ ranking.0.nome }}</strong> — {{ ranking.0.pontos }} pts</span>
+            </div>
+        {% endif %}
+
+        <section class="card glass">
+            <h2><span class="dot"></span> Check-in Diário</h2>
+            <form method="POST" action="{% url 'registrar' %}">
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="input-box checkbox-card">
+                        <span>Academia</span>
+                        <label class="switch">
+                            <input type="checkbox" name="academia">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="input-box checkbox-card">
+                        <span>Sem Doce</span>
+                        <label class="switch">
+                            <input type="checkbox" name="doce">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="input-box">
+                        <label>Água (Litros)</label>
+                        <input type="number" step="0.1" name="agua" placeholder="0.0" required>
+                    </div>
+                    <div class="input-box">
+                        <label>Corrida (KM)</label>
+                        <input type="number" step="0.1" name="corrida" placeholder="0.0" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-neon">SALVAR PERFORMANCE</button>
+            </form>
+        </section>
+
+        <section class="card glass">
+            <h2><span class="dot"></span> Performance Mensal</h2>
+            <div class="filter-container">
+                <a href="?periodo=dia" class="filter-btn {% if periodo_atual == 'dia' %}active{% endif %}">HOJE</a>
+                <a href="?periodo=mes" class="filter-btn {% if periodo_atual == 'mes' %}active{% endif %}">MÊS</a>
+                <a href="?periodo=ano" class="filter-btn {% if periodo_atual == 'ano' %}active{% endif %}">ANO</a>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="rankingChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="rankingChart"></canvas>
+            </div>
+        </section>
+
+        <section class="card glass" style="grid-column: 1 / -1; margin-top: 2rem;">
+            <h2><span class="dot"></span> Log de Atividades ({{ periodo_atual|upper }})</h2>
+            <div class="table-container">
+                <table class="neon-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Atleta</th>
+                            <th>Academia</th>
+                            <th>Doce</th>
+                            <th>Água</th>
+                            <th>Corrida</th>
+                            <th>Pontos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reg in historico %}
+                        <tr>
+                            <td>{{ reg.data|date:"d/m" }}</td>
+                            <td class="user-cell">{{ reg.usuario.username }}</td>
+                            <td>{% if reg.academia %}✅{% else %}❌{% endif %}</td>
+                            <td>{% if not reg.doce %}✅{% else %}❌{% endif %}</td>
+                            <td>{{ reg.agua }}L</td>
+                            <td>{{ reg.corrida }} km</td>
+                            <td class="pts-cell">+{{ reg.total_pontos }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align:center; padding: 20px;">Nenhum registro neste período.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+   <script>
+        const labels = [{% for item in ranking %}"{{ item.nome }}",{% endfor %}];
+        const dataPoints = [{% for item in ranking %}{{ item.pontos }},{% endfor %}];
+
+        const ctx = document.getElementById('rankingChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Pontos',
+                    data: dataPoints,
+                    backgroundColor: 'rgba(57, 255, 20, 0.5)',
+                    borderColor: '#39ff14',
+                    borderWidth: 2,
+                    borderRadius: 10,
+                    hoverBackgroundColor: '#39ff14'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#a8a8b3' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#e1e1e6', font: { weight: 'bold' } }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
