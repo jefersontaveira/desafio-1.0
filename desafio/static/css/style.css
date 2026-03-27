@@ -90,7 +90,9 @@ header {
 }
 
 .winner-box {
-    grid-column: 1 / -1;
+    /* FLEXBOX: Garante que a caixa ocupe 100% da linha e empurre os cards para baixo */
+    flex: 0 0 100%;
+    box-sizing: border-box; /* Evita que o padding vaze a tela */
     background: linear-gradient(90deg, rgba(57, 255, 20, 0.1), transparent);
     border-left: 4px solid var(--neon-green);
     padding: 1rem 2rem;
@@ -99,24 +101,36 @@ header {
 }
 
 /* ==========================================================================
-   4. LAYOUT E CARDS
+   4. LAYOUT E CARDS (AGORA COM FLEXBOX)
    ========================================================================== */
 .container {
     max-width: 1000px;
     margin: 0 auto;
     padding: 0 1.5rem 3rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap; /* Permite que os itens pulem de linha quando não couberem */
     gap: 2rem;
-    align-items: start;
+    align-items: flex-start; /* Alinha os cards pelo topo */
 }
 
 .card {
+    /* FLEXBOX: Cada card tenta ocupar o máximo de espaço possível, dividindo a tela meio a meio */
+    flex: 1;
+    min-width: 300px; /* Garante que o card não esprema demais antes de pular pro mobile */
+    box-sizing: border-box;
+
     background: var(--card-color);
     border: 1px solid var(--glass-border);
     border-radius: 1.25rem;
     padding: 2rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Se você adicionar uma tabela no futuro e quiser que ela ocupe a tela toda, use esta classe no HTML: class="card glass full-width" */
+.card.full-width {
+    flex: 0 0 100%; /* Força o card a ocupar 100% da largura do container */
+    max-width: 100%; /* Garante que não vaze para fora da tela */
+    margin-top: 1rem; /* Dá um pequeno respiro entre os gráficos e a tabela */
 }
 
 .glass {
@@ -323,58 +337,68 @@ input:checked + .slider:before {
 }
 
 /* ==========================================================================
-   8. RESPONSIVIDADE (MOBILE E TABLETS)
+   8. RESPONSIVIDADE COMPLETA (MOBILE E TABLETS)
    ========================================================================== */
 
-/* Telas menores que 850px (Tablets e Celulares deitados) */
+/* Telas médias (Tablets) */
 @media (max-width: 850px) {
     .container {
-        /* Transforma as duas colunas em uma só (um card embaixo do outro) */
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
+        /* Com flex, trocar a direção empilha os cards perfeitamente */
+        flex-direction: column;
     }
-
-    .winner-box {
-        /* Remove o limite de colunas já que agora só tem uma */
-        grid-column: auto;
+    .card {
+        width: 100%; /* Garante que o card preencha a tela do tablet */
     }
 }
 
-/* Telas menores que 600px (Smartphones em pé) */
+/* Telas pequenas (Celulares em pé) */
 @media (max-width: 600px) {
     header {
         padding: 1.5rem 1rem;
     }
 
     .neon-title {
-        /* Diminui um pouco o título para não quebrar a linha no celular */
-        font-size: 2rem;
+        font-size: 1.8rem;
+        letter-spacing: 0;
+    }
+
+    .user-badge {
+        font-size: 0.8rem;
+    }
+
+    .container {
+        padding: 0 1rem 2rem;
+    }
+
+    /* Ajuste da Caixa do Vencedor (Evita Vazamento de Texto) */
+    .winner-box {
+        padding: 1rem 0.75rem;
+        text-align: center;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        border-left: none;
+        border-bottom: 2px solid var(--neon-green);
+        background: linear-gradient(0deg, rgba(57, 255, 20, 0.1), transparent);
+        border-radius: 0.5rem 0.5rem 0 0;
     }
 
     .card {
-        /* Reduz o espaço interno do card para aproveitar melhor a tela do celular */
         padding: 1.5rem;
+        border-radius: 1rem;
     }
 
+    /* Coloca Água e Corrida um embaixo do outro no celular */
     .row {
-        /* Essa é a mágica! Coloca os campos do formulário um embaixo do outro no celular */
         flex-direction: column;
         gap: 1rem;
     }
 
-    .checkbox-card {
-        /* Garante que o texto e o botão de "switch" fiquem bem espaçados */
-        padding: 0.8rem 1rem;
-    }
-
     .filter-container {
-        /* Se os botões de filtro (Dia, Mês, Ano) ficarem apertados, eles pulam de linha */
         flex-wrap: wrap;
         gap: 10px;
     }
 
     .filter-btn {
-        /* Ajusta o tamanho do botão neon de filtro */
         padding: 6px 15px;
         font-size: 0.75rem;
     }
