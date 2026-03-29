@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import RegistroDiario
 from datetime import date, timedelta
 from django.http import JsonResponse
@@ -20,6 +20,16 @@ def dashboard(request):
         filtro = Q(data__year=hoje.year)
     else:  # mês
         filtro = Q(data__month=hoje.month, data__year=hoje.year)
+
+    atleta_filtro = request.GET.get('atleta')
+    data_filtro = request.GET.get('data_filtro')
+
+    if atleta_filtro:
+        filtro &= Q(usuario__username=atleta_filtro)
+
+    if data_filtro:
+        # data_filtro vem no formato 'YYYY-MM-DD' do HTML
+        filtro &= Q(data=data_filtro)
 
     usuarios = User.objects.all()
     ranking_data = []
@@ -80,3 +90,25 @@ def api_ranking(request):
         {"nome": "Mariam", "pontos": 910},
     ]
     return JsonResponse(dados, safe=False)
+
+
+@login_required
+def editar_registro(request, id):
+    if request.method == "POST":
+        registro = get_object_or_404(RegistroDiario, id=id)
+
+        # Trava de Segurança
+        if registro.usuario != request.user:
+            messages.error(request, 'Acesso Negado: Você não pode alterar este registro.')
+            return redirect('dashboard')
+
+        # Atualiza os dados
+        registro.academia = request.POST.get('academia') == 'on'
+        registro.doce = request.POST.get('doce') == 'on'
+        registro.agua = float(request.POST.get('agua', 0).replace(',', '.'))
+        registro.corrida = float(request.POST.get('corrida', 0).replace(',', '.'))
+
+        registro.save()
+        messages.success(request, 'Check-in atualizado com sucesso!')
+
+    return redirect('dashboard')

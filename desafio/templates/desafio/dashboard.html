@@ -119,7 +119,26 @@
         </section>
 
         <section class="card glass" style="grid-column: 1 / -1; margin-top: 2rem;">
-            <h2><span class="dot"></span> Log de Atividades ({{ periodo_atual|upper }})</h2>
+            <div class="log-header">
+                <h2><span class="dot"></span> Log de Atividades ({{ periodo_atual|upper }})</h2>
+
+                <form method="GET" class="filter-bar">
+                    <input type="hidden" name="periodo" value="{{ periodo_atual }}">
+
+                    <select name="atleta" class="glass-input">
+                        <option value="">Todos os Atletas</option>
+                        <option value="jeferson" {% if request.GET.atleta == 'jeferson' %}selected{% endif %}>Jeferson</option>
+                        <option value="thalles" {% if request.GET.atleta == 'thalles' %}selected{% endif %}>Thalles</option>
+                        <option value="mariam" {% if request.GET.atleta == 'mariam' %}selected{% endif %}>Mariam</option>
+                    </select>
+
+                    <input type="date" name="data_filtro" class="glass-input" value="{{ request.GET.data_filtro }}">
+
+                    <button type="submit" class="btn-filtrar">FILTRAR</button>
+                    <a href="{% url 'dashboard' %}" class="btn-limpar">Limpar</a>
+                </form>
+            </div>
+
             <div class="table-container">
                 <table class="neon-table">
                     <thead>
@@ -131,30 +150,79 @@
                             <th>Água</th>
                             <th>Corrida</th>
                             <th>Pontos</th>
-                        </tr>
+                            <th>Ação</th> </tr>
                     </thead>
                     <tbody>
                         {% for reg in historico %}
                         <tr>
-                            <td>{{ reg.data|date:"d/m" }}</td>
-                            <td class="user-cell">{{ reg.usuario.username }}</td>
+                            <td>{{ reg.data|date:"d/m/Y" }}</td>
+                            <td class="user-cell">{{ reg.usuario.username|upper }}</td>
                             <td>{% if reg.academia %}✅{% else %}❌{% endif %}</td>
                             <td>{% if not reg.doce %}✅{% else %}❌{% endif %}</td>
                             <td>{{ reg.agua }}L</td>
                             <td>{{ reg.corrida }} km</td>
                             <td class="pts-cell">+{{ reg.total_pontos }}</td>
+                            <td>
+                                {% if reg.usuario == request.user %}
+                                    <a href="javascript:void(0)" class="btn-edit"
+                                       data-id="{{ reg.id }}"
+                                       data-academia="{{ reg.academia|yesno:'true,false' }}"
+                                       data-doce="{{ reg.doce|yesno:'true,false' }}"
+                                       data-agua="{{ reg.agua|stringformat:'.1f' }}"
+                                       data-corrida="{{ reg.corrida|stringformat:'.1f' }}"
+                                       onclick="abrirModalEdicao(this)">
+                                       ✏️ Editar
+                                    </a>
+                                {% else %}
+                                    <span style="color: var(--text-secondary); font-size: 0.8rem;">---</span>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="7" style="text-align:center; padding: 20px;">Nenhum registro neste período.</td>
+                            <td colspan="8" style="text-align:center; padding: 20px; color: var(--text-secondary);">
+                                Nenhum registro encontrado com estes filtros.
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </section>
-
     </main>
+
+    <div class="overlay-modal" id="modalEdicao" style="display: none;">
+        <div class="alert-card glass" style="text-align: left; border-top: 3px solid var(--neon-green); width: 90%; max-width: 400px;">
+            <h3 style="color: var(--text-primary); margin-bottom: 1.5rem; text-align: center;">✏️ Editar Registro</h3>
+
+            <form id="formEdicao" method="POST" action="">
+                {% csrf_token %}
+
+                <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 0.8rem; border-radius: 0.5rem;">
+                    <label style="color: var(--text-primary); font-weight: bold;">Academia</label>
+                    <input type="checkbox" name="academia" id="edit-academia" style="transform: scale(1.3);">
+                </div>
+
+                <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 0.8rem; border-radius: 0.5rem;">
+                    <label style="color: var(--text-primary); font-weight: bold;">Sem Doce</label>
+                    <input type="checkbox" name="doce" id="edit-doce" style="transform: scale(1.3);">
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">Água (Litros)</label>
+                    <input type="number" step="0.1" name="agua" id="edit-agua" class="glass-input" style="width: 100%; padding: 0.6rem; box-sizing: border-box;" required>
+                </div>
+
+                <div style="margin-bottom: 2rem;">
+                    <label style="color: var(--text-secondary); display: block; margin-bottom: 0.3rem;">Corrida (KM)</label>
+                    <input type="number" step="0.1" name="corrida" id="edit-corrida" class="glass-input" style="width: 100%; padding: 0.6rem; box-sizing: border-box;" required>
+                </div>
+
+                <button type="submit" class="btn-filtrar" style="width: 100%; margin-bottom: 0.5rem;">SALVAR ALTERAÇÕES</button>
+                <button type="button" class="btn-fechar-modal" onclick="fecharModalEdicao()" style="width: 100%;">Cancelar</button>
+            </form>
+        </div>
+    </div>
 
    <script>
     let meuGrafico;
@@ -235,6 +303,32 @@
             });
         });
     });
-    </script>
+
+    // Função para abrir o popup e preencher com os dados do botão clicado
+    function abrirModalEdicao(btn) {
+        // 1. Pega os dados escondidos no botão
+        const id = btn.getAttribute('data-id');
+        const academia = btn.getAttribute('data-academia') === 'true';
+        const doce = btn.getAttribute('data-doce') === 'true'; // Lembra: doce=false significa bateu a meta
+        const agua = btn.getAttribute('data-agua');
+        const corrida = btn.getAttribute('data-corrida');
+
+        // 2. Preenche os campos do popup
+        document.getElementById('edit-academia').checked = academia;
+        document.getElementById('edit-doce').checked = doce;
+        document.getElementById('edit-agua').value = agua.replace(',', '.');
+        document.getElementById('edit-corrida').value = corrida.replace(',', '.');
+
+        // 3. Define para onde o formulário vai enviar os dados
+        document.getElementById('formEdicao').action = `/editar/${id}/`;
+
+        // 4. Mostra o popup na tela
+        document.getElementById('modalEdicao').style.display = 'flex';
+    }
+
+    function fecharModalEdicao() {
+        document.getElementById('modalEdicao').style.display = 'none';
+    }
+</script>
 </body>
 </html>

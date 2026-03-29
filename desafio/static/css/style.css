@@ -403,6 +403,104 @@ input:checked + .slider:before {
 }
 
 /* ==========================================================================
+   BARRA DE FILTROS E LOG DE ATIVIDADES
+   ========================================================================== */
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-bar {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.glass-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    padding: 0.5rem 0.8rem;
+    border-radius: 0.4rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.glass-input:focus {
+    border-color: var(--neon-green);
+    box-shadow: 0 0 5px rgba(57, 255, 20, 0.2);
+}
+
+.glass-input option {
+    background: var(--bg-color); /* Impede que as opções fiquem transparentes e ilegíveis */
+    color: var(--text-primary);
+}
+
+.btn-filtrar {
+    background: rgba(57, 255, 20, 0.15);
+    color: var(--neon-green);
+    border: 1px solid var(--neon-green);
+    padding: 0.5rem 1rem;
+    border-radius: 0.4rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-filtrar:hover {
+    background: var(--neon-green);
+    color: var(--bg-color);
+    box-shadow: var(--neon-glow);
+}
+
+.btn-limpar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03); /* Fundo de vidro quase invisível */
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 0.4rem;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.btn-limpar:hover {
+    background: rgba(255, 77, 77, 0.1); /* Fundo avermelhado bem sutil */
+    color: #ff4d4d; /* Vermelho alerta */
+    border-color: rgba(255, 77, 77, 0.5); /* Borda acende em vermelho */
+    box-shadow: 0 0 10px rgba(255, 77, 77, 0.2); /* Brilho neon leve */
+}
+
+.btn-edit {
+    display: inline-block;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    text-decoration: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.3rem;
+    font-size: 0.8rem;
+    border: 1px solid var(--glass-border);
+    transition: 0.3s;
+}
+
+.btn-edit:hover {
+    border-color: var(--neon-green);
+    color: var(--neon-green);
+}
+
+/* ==========================================================================
    8. MODAL DE ALERTAS (MENSAGENS)
    ========================================================================== */
 .overlay-modal {
@@ -565,5 +663,13 @@ input:checked + .slider:before {
 
     h2 {
         font-size: 1.1rem;
+    }
+
+    .filter-bar { width: 100%; }
+    .glass-input { flex: 1; }
+    .btn-filtrar { width: 100%; }
+
+    .btn-limpar {
+        width: 100%
     }
 }
