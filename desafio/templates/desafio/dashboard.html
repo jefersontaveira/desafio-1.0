@@ -114,6 +114,7 @@
 
             <div class="chart-container">
                 <canvas id="rankingChart"></canvas>
+                {{ ranking|json_script:"ranking-data" }}
             </div>
         </section>
 
@@ -156,11 +157,21 @@
     </main>
 
    <script>
-        const labels = [{% for item in ranking %}"{{ item.nome }}",{% endfor %}];
-        const dataPoints = [{% for item in ranking %}{{ item.pontos }},{% endfor %}];
+    let meuGrafico;
+
+    // Função que desenha o gráfico (O "Artista")
+    function desenharGrafico(dadosRanking) {
+        const labels = dadosRanking.map(item => item.nome);
+        const dataPoints = dadosRanking.map(item => item.pontos);
 
         const ctx = document.getElementById('rankingChart').getContext('2d');
-        new Chart(ctx, {
+
+        // Apaga o gráfico velho antes de desenhar o novo com a animação
+        if (meuGrafico) {
+            meuGrafico.destroy();
+        }
+
+        meuGrafico = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
@@ -179,18 +190,51 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#a8a8b3' }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#e1e1e6', font: { weight: 'bold' } }
-                    }
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a8a8b3' } },
+                    x: { grid: { display: false }, ticks: { color: '#e1e1e6', font: { weight: 'bold' } } }
                 }
             }
         });
+    }
+
+    // Quando a página carregar
+    document.addEventListener('DOMContentLoaded', function() {
+        // Desenha o gráfico inicial
+        const dadosIniciais = JSON.parse(document.getElementById('ranking-data').textContent);
+        desenharGrafico(dadosIniciais);
+
+        // 4. Configura os botões de Filtro para o Gráfico
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+
+                // Troca a cor do botão clicado
+                filterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                // Busca os dados
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        // Pega APENAS os dados do gráfico e redesenha
+                        const scriptDados = doc.getElementById('ranking-data');
+                        if (scriptDados) {
+                            const novosDados = JSON.parse(scriptDados.textContent);
+                            desenharGrafico(novosDados);
+                        }
+
+                        // Atualiza a URL lá em cima no navegador
+                        window.history.pushState({path: url}, '', url);
+                    });
+            });
+        });
+    });
     </script>
 </body>
 </html>
