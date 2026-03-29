@@ -89,15 +89,81 @@ header {
     border-bottom: 1px solid #ff4d4d;
 }
 
-.winner-box {
-    /* FLEXBOX: Garante que a caixa ocupe 100% da linha e empurre os cards para baixo */
+/* ==========================================================================
+   PÓDIO DE LÍDERES
+   ========================================================================== */
+.podium-box {
     flex: 0 0 100%;
-    box-sizing: border-box; /* Evita que o padding vaze a tela */
-    background: linear-gradient(90deg, rgba(57, 255, 20, 0.1), transparent);
-    border-left: 4px solid var(--neon-green);
-    padding: 1rem 2rem;
-    border-radius: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end; /* Alinha os cards por baixo */
+    gap: 1rem;
     margin-bottom: 1rem;
+    padding: 1rem 0;
+}
+
+.podium-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--card-color);
+    border: 1px solid var(--glass-border);
+    border-radius: 0.5rem 0.5rem 0 0;
+    padding: 1rem;
+    width: 30%;
+    max-width: 150px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    position: relative;
+    transition: 0.3s;
+}
+
+.podium-item .medal {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.podium-item strong {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.podium-item .pts {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+    font-weight: bold;
+}
+
+/* --- DESTAQUE 1º LUGAR --- */
+.podium-item.first {
+    border-color: var(--neon-green);
+    background: linear-gradient(0deg, rgba(57, 255, 20, 0.15), var(--card-color));
+    box-shadow: var(--neon-glow);
+    transform: scale(1.15); /* Faz o líder ficar visivelmente maior */
+    z-index: 2; /* Garante que fique por cima dos outros */
+    border-bottom: 4px solid var(--neon-green);
+    padding-bottom: 1.5rem; /* Estica o card para dar altura */
+}
+
+.podium-item.first strong {
+    color: var(--neon-green);
+    text-shadow: 0 0 5px rgba(57, 255, 20, 0.3);
+}
+
+.podium-item.first .pts {
+    color: #fff; /* Destaca a pontuação do líder em branco puro */
+}
+
+/* --- DESTAQUE 2º LUGAR --- */
+.podium-item.second {
+    border-bottom: 4px solid #C0C0C0; /* Cor Prata */
+}
+
+/* --- DESTAQUE 3º LUGAR --- */
+.podium-item.third {
+    border-bottom: 4px solid #CD7F32; /* Cor Bronze */
 }
 
 /* ==========================================================================
@@ -337,7 +403,78 @@ input:checked + .slider:before {
 }
 
 /* ==========================================================================
-   8. RESPONSIVIDADE COMPLETA (MOBILE E TABLETS)
+   8. MODAL DE ALERTAS (MENSAGENS)
+   ========================================================================== */
+.overlay-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8); /* Fundo escuro semitransparente */
+    backdrop-filter: blur(8px); /* Efeito de vidro borrado no fundo */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* Garante que fique por cima de TUDO */
+}
+
+.alert-card {
+    background: var(--card-color);
+    border: 1px solid var(--glass-border);
+    /* Borda superior levemente avermelhada para indicar restrição,
+       sem quebrar o visual dark/neon do sistema */
+    border-top: 3px solid #ff4d4d;
+    border-radius: 1.25rem;
+    padding: 2.5rem 2rem;
+    max-width: 90%; /* Responsivo para celulares */
+    width: 400px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+    animation: modalFadeIn 0.3s ease-out; /* Animação suave ao abrir */
+}
+
+.alert-card p {
+    color: var(--text-primary);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.btn-fechar-modal {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--glass-border);
+    padding: 0.8rem 2rem;
+    border-radius: 0.5rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-fechar-modal:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+/* Animação para o modal "surgir" na tela */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* ==========================================================================
+   9. RESPONSIVIDADE COMPLETA (MOBILE E TABLETS)
    ========================================================================== */
 
 /* Telas médias (Tablets) */
@@ -370,17 +507,40 @@ input:checked + .slider:before {
         padding: 0 1rem 2rem;
     }
 
-    /* Ajuste da Caixa do Vencedor (Evita Vazamento de Texto) */
-    .winner-box {
-        padding: 1rem 0.75rem;
-        text-align: center;
-        font-size: 0.85rem;
-        line-height: 1.4;
-        border-left: none;
-        border-bottom: 2px solid var(--neon-green);
-        background: linear-gradient(0deg, rgba(57, 255, 20, 0.1), transparent);
-        border-radius: 0.5rem 0.5rem 0 0;
+    .podium-box {
+        gap: 0.5rem;
+        width: 100%;
+        justify-content: center;
+        margin-left: 0;
+        margin-right: 0;
+        box-sizing: border-box;
     }
+
+    .podium-item {
+        flex: 1;
+        padding: 0.8rem 0.5rem;
+        width: 0;
+        max-width: 120px;
+    }
+    .podium-item strong {
+        font-size: 0.7rem;
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .podium-item.first {
+        transform: scale(1.0);
+        padding-bottom: 10px;
+        box-shadow: 0 0 10px rgba(57, 255, 20, 0.4);
+        z-index: 1;
+    }
+
+    .podium-item .medal { font-size: 1.4rem; }
+    .podium-item strong { font-size: 0.75rem; }
+    .podium-item .pts { font-size: 0.7rem; }
 
     .card {
         padding: 1.5rem;

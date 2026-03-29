@@ -1,0 +1,329 @@
+:root {
+    --bg-color: #121214;
+    --card-color: #1c1c1f;
+    --neon-green: #39ff14;
+    --neon-glow: 0 0 15px rgba(57, 255, 20, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --text-primary: #e1e1e6;
+    --text-secondary: #a8a8b3;
+}
+
+body {
+    background-color: var(--bg-color);
+    background-image: radial-gradient(circle at top right, #1a1a1e, #121214);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    line-height: 1.6;
+}
+
+header {
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.neon-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--neon-green);
+    text-shadow: var(--neon-glow);
+    margin: 0;
+    letter-spacing: -1px;
+}
+
+.user-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.user-badge strong {
+    color: var(--neon-green);
+    text-shadow: var(--neon-glow);
+}
+
+.logout-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+    font-size: 0.85rem;
+    text-transform: lowercase;
+    transition: 0.3s;
+    border-bottom: 1px solid transparent;
+}
+
+.logout-btn:hover {
+    color: #ff4d4d; /* Cor de alerta ao passar o mouse */
+    border-bottom: 1px solid #ff4d4d;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1.5rem 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1.5fr; /* Divide form e gráfico lado a lado em telas grandes */
+    gap: 2rem;
+}
+
+/* Em telas pequenas, empilha */
+@media (max-width: 850px) {
+    .container { grid-template-columns: 1fr; }
+}
+
+.card {
+    background: var(--card-color);
+    border: 1px solid var(--glass-border);
+    border-radius: 1.25rem;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.glass {
+    backdrop-filter: blur(12px);
+    background: rgba(28, 28, 31, 0.7);
+}
+
+.winner-box {
+    grid-column: 1 / -1; /* Ocupa a largura toda */
+    background: linear-gradient(90deg, rgba(57, 255, 20, 0.1), transparent);
+    border-left: 4px solid var(--neon-green);
+    padding: 1rem 2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    background: var(--neon-green);
+    border-radius: 50%;
+    box-shadow: var(--neon-glow);
+}
+
+/* Formulário UI */
+.row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.input-box {
+    flex: 1;
+}
+
+.checkbox-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.2);
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--glass-border);
+}
+
+/* Esconde o checkbox padrão */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* O caminho do interruptor (Track) */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #2a2a2e;
+  transition: .4s;
+  border-radius: 34px;
+  border: 1px solid var(--glass-border);
+}
+
+/* A bolinha (Thumb) */
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 3px;
+  background-color: #a8a8b3;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+/* Estado Ativado (Neon) */
+input:checked + .slider {
+  background-color: rgba(57, 255, 20, 0.2);
+  border-color: var(--neon-green);
+  box-shadow: var(--neon-glow);
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+  background-color: var(--neon-green);
+  box-shadow: var(--neon-glow);
+}
+
+/* Ajuste no card para alinhar texto e switch */
+.checkbox-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.2);
+    padding: 0.8rem 1.2rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--glass-border);
+    min-height: 50px;
+}
+
+.checkbox-card span {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+input[type="number"] {
+    width: 100%;
+    background: #09090a;
+    border: 1px solid #323238;
+    color: white;
+    padding: 0.8rem;
+    border-radius: 0.5rem;
+    box-sizing: border-box;
+}
+
+input:focus {
+    border-color: var(--neon-green);
+    outline: none;
+}
+
+.btn-neon {
+    width: 100%;
+    background: var(--neon-green);
+    color: #000;
+    border: none;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-top: 1rem;
+}
+
+.btn-neon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.4);
+}
+
+.chart-container {
+    position: relative;
+    height: 350px;
+    width: 100%;
+}
+
+.filter-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.filter-btn {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 8px 20px;
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    transition: 0.3s;
+}
+
+.filter-btn:hover {
+    color: var(--neon-green);
+    border-color: var(--neon-green);
+}
+
+.filter-btn.active {
+    background: rgba(57, 255, 20, 0.1);
+    color: var(--neon-green);
+    border-color: var(--neon-green);
+    box-shadow: var(--neon-glow);
+}
+
+
+
+
+
+
+
+
+
+.table-container {
+    overflow-x: auto; /* Garante que funcione no celular */
+}
+
+.neon-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.neon-table th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid #222;
+    color: var(--neon-green);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.neon-table td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.neon-table tr:hover {
+    background: rgba(57, 255, 20, 0.03); /* Efeito de hover sutil */
+}
+
+.user-cell {
+    color: #fff;
+    font-weight: bold;
+}
+
+.pts-cell {
+    color: var(--neon-green);
+    font-weight: 800;
+    text-shadow: var(--neon-glow);
+}

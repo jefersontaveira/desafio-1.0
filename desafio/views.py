@@ -5,11 +5,13 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.db.models import Sum, Count, Q
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.contrib import messages
 
 @login_required
 def dashboard(request):
     periodo = request.GET.get('periodo', 'mes')
-    hoje = date.today()
+    hoje = timezone.localdate()
 
     # Configuração do Filtro de Data
     if periodo == 'dia':
@@ -25,19 +27,7 @@ def dashboard(request):
     for user in usuarios:
         registros = RegistroDiario.objects.filter(filtro, usuario=user)
 
-        stats = registros.aggregate(
-            total_km=Sum('corrida'),
-            total_agua=Sum('agua'),
-            total_acad=Count('id', filter=Q(academia=True)),
-            dias_sem_doce=Count('id', filter=Q(doce=False))
-        )
-
-        km = stats['total_km'] or 0
-        agua = stats['total_agua'] or 0
-        acad = stats['total_acad'] or 0
-        doces_meta = stats['dias_sem_doce'] or 0
-
-        pontos = (acad * 100) + (doces_meta * 100) + (agua * 33.33) + (km * 30)
+        pontos = sum(reg.total_pontos for reg in registros)
 
         ranking_data.append({
             'nome': user.username,
@@ -57,18 +47,30 @@ def dashboard(request):
 
 @login_required
 def registrar_progresso(request):
+    hoje = timezone.localdate()  # Garante o fuso horário correto
+
     if request.method == "POST":
-        RegistroDiario.objects.update_or_create(
+        # 1. Verifica se o usuário já tem um registro para o dia de hoje
+        ja_registrou = RegistroDiario.objects.filter(usuario=request.user, data=hoje).exists()
+
+        if ja_registrou:
+            # Avisa na tela que não pode enviar duas vezes (precisaremos colocar o HTML disso depois)
+            messages.error(request, 'Você já enviou o seu registro diário. Para alterar entre em contato com o desenvolvedor.')
+            return redirect('dashboard')
+
+        # 2. Se não registrou, nós criamos o registro do zero
+        RegistroDiario.objects.create(
             usuario=request.user,
-            data=date.today(),
-            defaults={
-                'academia': request.POST.get('academia') == 'on',
-                'doce': request.POST.get('doce') == 'on',
-                'agua': float(request.POST.get('agua', 0)),
-                'corrida': float(request.POST.get('corrida', 0)),
-            }
+            data=hoje,
+            academia=request.POST.get('academia') == 'on',
+            doce=request.POST.get('doce') == 'on',
+            agua=float(request.POST.get('agua', 0)),
+            corrida=float(request.POST.get('corrida', 0)),
         )
+
+        messages.success(request, 'Check-in realizado com sucesso!')
         return redirect('dashboard')
+
     return render(request, 'desafio/form.html')
 
 def api_ranking(request):

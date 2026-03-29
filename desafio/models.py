@@ -19,13 +19,47 @@ class RegistroDiario(models.Model):
 
     @property
     def total_pontos(self):
-        # Normalizando tudo para base 100
-        pts_academia = 100 if self.academia else 0
-        pts_doce = 100 if not self.doce else 0  # Ganha ponto se NÃO comeu doce
-        pts_agua = min(100, (self.agua / 3) * 100)
+        PESO_BASE = 10
+        PTS_KM_NORMAL = 3  # 3.33km/dia = ~10 pontos
+        PTS_KM_EXTRA = 1  # Bônus reduzido após bater 100km no mês
 
-        # Corrida: 100km/mês = 3.33km/dia para ganhar 100 pontos diários
-        # Logo, cada 1km vale 30 pontos.
-        pts_corrida = self.corrida * 30
+        pts_total = 0
+        pts_total += min(PESO_BASE, (self.agua / 3.0) * PESO_BASE)
+        if not self.doce:
+            pts_total += PESO_BASE
+        if not self.pk:
+            return round(pts_total + (self.corrida * PTS_KM_NORMAL) + (PESO_BASE if self.academia else 0), 2)
+        if self.academia:
+            semana_atual = self.data.isocalendar()[1]
+            treinos_antes = RegistroDiario.objects.filter(
+                usuario=self.usuario,
+                data__year=self.data.year,
+                data__week=semana_atual,
+                data__lt=self.data,
+                academia=True
+            ).count()
 
-        return round(pts_academia + pts_doce + pts_agua + pts_corrida, 2)
+            if treinos_antes < 6:
+                pts_total += PESO_BASE
+        if self.corrida > 0:
+            km_acumulado_antes = RegistroDiario.objects.filter(
+                usuario=self.usuario,
+                data__year=self.data.year,
+                data__month=self.data.month,
+                data__lt=self.data
+            ).aggregate(models.Sum('corrida'))['corrida__sum'] or 0.0
+
+            km_hoje = self.corrida
+            km_total_com_hoje = km_acumulado_antes + km_hoje
+
+            # Verifica se está no limite normal ou se já é extra
+            if km_acumulado_antes >= 100:
+                pts_total += (km_hoje * PTS_KM_EXTRA)
+            elif km_total_com_hoje > 100:
+                km_normal = 100 - km_acumulado_antes
+                km_extra = km_total_com_hoje - 100
+                pts_total += (km_normal * PTS_KM_NORMAL) + (km_extra * PTS_KM_EXTRA)
+            else:
+                pts_total += (km_hoje * PTS_KM_NORMAL)
+
+        return round(pts_total, 2)

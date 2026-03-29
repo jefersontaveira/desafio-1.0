@@ -11,6 +11,19 @@
 </head>
 <body>
 
+    {% if messages %}
+        <div class="overlay-modal" id="modalAlerta">
+            <div class="alert-card glass">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+                <button class="btn-fechar-modal" onclick="document.getElementById('modalAlerta').style.display='none'">
+                    ENTENDIDO
+                </button>
+            </div>
+        </div>
+    {% endif %}
+
     <header>
         <h1 class="neon-title">DESAFIO 1.0</h1>
         <div class="user-badge">
@@ -27,8 +40,30 @@
     <main class="container">
 
         {% if ranking %}
-            <div class="winner-box">
-                <span>👑 LÍDER ATUAL: <strong>{{ ranking.0.nome }}</strong> — {{ ranking.0.pontos }} pts</span>
+        <div class="podium-box">
+
+            {% if ranking|length > 1 %}
+                <div class="podium-item second">
+                    <span class="medal">🥈</span>
+                    <strong>{{ ranking.1.nome }}</strong>
+                    <span class="pts">{{ ranking.1.pontos }} pts</span>
+                </div>
+                {% endif %}
+
+                <div class="podium-item first">
+                    <span class="medal">👑</span>
+                    <strong>{{ ranking.0.nome }}</strong>
+                    <span class="pts">{{ ranking.0.pontos }} pts</span>
+                </div>
+
+                {% if ranking|length > 2 %}
+                <div class="podium-item third">
+                    <span class="medal">🥉</span>
+                    <strong>{{ ranking.2.nome }}</strong>
+                    <span class="pts">{{ ranking.2.pontos }} pts</span>
+                </div>
+                {% endif %}
+
             </div>
         {% endif %}
 
