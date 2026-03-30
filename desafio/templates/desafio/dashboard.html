@@ -158,7 +158,7 @@
                             <td>{{ reg.data|date:"d/m/Y" }}</td>
                             <td class="user-cell">{{ reg.usuario.username|upper }}</td>
                             <td>{% if reg.academia %}✅{% else %}❌{% endif %}</td>
-                            <td>{% if not reg.doce %}✅{% else %}❌{% endif %}</td>
+                            <td>{% if reg.doce %}✅{% else %}❌{% endif %}</td>
                             <td>{{ reg.agua }}L</td>
                             <td>{{ reg.corrida }} km</td>
                             <td class="pts-cell">+{{ reg.total_pontos }}</td>

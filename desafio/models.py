@@ -25,7 +25,7 @@ class RegistroDiario(models.Model):
 
         pts_total = 0
         pts_total += min(PESO_BASE, (self.agua / 3.0) * PESO_BASE)
-        if not self.doce:
+        if self.doce:
             pts_total += PESO_BASE
         if not self.pk:
             return round(pts_total + (self.corrida * PTS_KM_NORMAL) + (PESO_BASE if self.academia else 0), 2)
