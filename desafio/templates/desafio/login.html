@@ -4,65 +4,416 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Desafio 1.0</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>Desafio 1.0 - Login</title>
+
     <style>
-        .login-container {
+        /* ==========================================================================
+           1. VARIÁVEIS E SETUP (Cores exatas da imagem)
+           ========================================================================== */
+        :root {
+            --neon-green: #39ff14;
+            --neon-glow: 0 0 15px rgba(57, 255, 20, 0.7);
+            --bg-color: #000000; /* Fundo preto puro para contraste máximo */
+            --glass-pane: rgba(57, 255, 20, 0.15); /* Cor do vidro verde */
+            --dark-metal: #1a1a1d; /* Metal escuro da estrutura */
+            --text-primary: #e1e1e6;
+            --text-secondary: #a8a8b3;
+        }
+
+        body {
+            margin: 0;
             height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            background-color: var(--bg-color);
+            overflow: hidden;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
-        .login-card {
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
+
+        /* ==========================================================================
+           2. RECONSTRUÇÃO DO ABAJUR (Visual da Imagem)
+           ========================================================================== */
+        .lamp-assembly {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1; /* Atrás do login card */
+            transition: opacity 0.5s ease;
         }
-        .login-card input {
-            margin-bottom: 1.5rem;
-            width: 100%;
-            padding: 1rem;
-            background: #09090a;
-            border: 1px solid #323238;
-            color: white;
-            border-radius: 0.5rem;
+
+        /* A Cúpula Trapezoidal de Metal e Vidro */
+        .lamp-shade {
+            width: 280px;
+            height: 180px;
+            position: relative;
+            /* Cria o formato trapezoidal usando clip-path */
+            clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+
+            /* Gradiente complexo simulando os gomos de metal e vidro */
+            background:
+                linear-gradient(90deg,
+                    var(--dark-metal) 0%, var(--dark-metal) 2%,
+                    transparent 2%, transparent 18%,
+                    var(--dark-metal) 18%, var(--dark-metal) 22%,
+                    transparent 22%, transparent 38%,
+                    var(--dark-metal) 38%, var(--dark-metal) 42%,
+                    transparent 42%, transparent 58%,
+                    var(--dark-metal) 58%, var(--dark-metal) 62%,
+                    transparent 62%, transparent 78%,
+                    var(--dark-metal) 78%, var(--dark-metal) 82%,
+                    transparent 82%, transparent 98%,
+                    var(--dark-metal) 98%, var(--dark-metal) 100%
+                ),
+                linear-gradient(180deg, #252529 0%, #101012 100%); /* Fundo metal escuro */
+
+            border-bottom: 8px solid #000; /* Base preta grossa da cúpula */
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+        }
+
+        /* Os painéis de vidro verde dentro da cúpula */
+        .lamp-shade::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 4px,
+                var(--glass-pane) 4px,
+                var(--glass-pane) 46px
+            );
+            opacity: 0.3; /* Vidro opaco quando desligado */
+            transition: opacity 0.3s ease;
+        }
+
+        /* Os tubos de neon internos (detalhes verticais brilhantes da imagem) */
+        .neon-tubes {
+            position: absolute;
+            top: 10%; left: 0; width: 100%; height: 80%;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 10%;
             box-sizing: border-box;
+            opacity: 0; /* Desligados inicialmente */
+            transition: opacity 0.1s ease;
         }
-        .login-card input:focus {
-            border-color: var(--neon-green);
+
+        .tube {
+            width: 4px;
+            height: 100%;
+            background: #fff; /* Núcleo branco do neon */
+            border-radius: 2px;
+            box-shadow: 0 0 15px 2px var(--neon-green), inset 0 0 5px var(--neon-green);
+        }
+
+        /* A Haste Central e a Base Ornada (Metal Cromado/Escuro) */
+        .lamp-stem {
+            width: 12px;
+            height: 60px;
+            background: linear-gradient(90deg, #333 0%, #666 50%, #333 100%); /* Efeito cromado escuro */
+            margin-top: -1px;
+        }
+
+        .lamp-base {
+            width: 100px;
+            height: 40px;
+            background: linear-gradient(180deg, #444 0%, #111 100%);
+            border-radius: 50% 50% 10px 10px; /* Formato arredondado da base ornada */
+            border: 2px solid #222;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+        }
+
+        /* ==========================================================================
+           3. A CORDINHA E A MÃO (Mecânica exata da imagem)
+           ========================================================================== */
+        .pull-mechanism {
+            position: absolute;
+            z-index: 5; /* Entre o abajur e o card */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: ns-resize;
+        }
+
+        .pull-string {
+            width: 2px;
+            height: 150px; /* Corda longa da imagem */
+            background: linear-gradient(180deg, #555 0%, #222 100%);
+            transition: height 0.1s linear;
+        }
+
+        /* O Puxador Triangular Tri-seta (SVG para precisão) */
+        .pull-handle {
+            width: 30px;
+            height: 30px;
+            margin-top: -5px;
+            transition: transform 0.3s ease;
+        }
+
+        /* A Mão Enluvada (Aparece apenas durante o drag) */
+        .pull-hand {
+            position: absolute;
+            bottom: -50px; /* Posicionada na bolinha */
+            width: 80px;
+            height: auto;
+            opacity: 0; /* Invisível inicialmente */
+            transform: translateY(20px);
+            transition: all 0.2s ease;
+            pointer-events: none; /* Não atrapalha o clique */
+        }
+
+        /* ==========================================================================
+           4. A CAIXA DE LOGIN (Glassmorphism Neon)
+           ========================================================================== */
+        .login-overlay {
+            position: absolute;
+            z-index: 10; /* À frente de tudo */
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .login-card {
+            background: rgba(20, 20, 22, 0.6); /* Fundo super escuro e semi-transparente */
+            backdrop-filter: blur(12px); /* Efeito de vidro borrado intenso da imagem */
+            padding: 3.5rem 3rem;
+            width: 90%;
+            max-width: 360px;
+            border-radius: 1rem;
+            border: 1px solid rgba(57, 255, 20, 0.1); /* Borda neon sutil */
+            text-align: center;
+            transition: all 0.5s ease;
+            box-sizing: border-box;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+        }
+
+        .login-card h1 {
+            color: var(--neon-green);
+            margin: 0 0 3rem 0;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 1.4rem;
+            font-weight: 900;
+            text-shadow: var(--neon-glow);
+        }
+
+        /* Inputs minimalistas da imagem */
+        .glass-input {
+            width: 100%;
+            padding: 1.1rem;
+            box-sizing: border-box;
+            margin-bottom: 1.8rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
             outline: none;
-            box-shadow: var(--neon-glow);
+            transition: border-color 0.3s;
         }
-        .error-msg {
-            color: #ff4d4d;
-            font-size: 0.8rem;
-            margin-bottom: 1rem;
+
+        .glass-input:focus {
+            border-color: rgba(57, 255, 20, 0.5);
         }
+
+        ::placeholder { color: rgba(168, 168, 179, 0.5); }
+
+        .btn-entrar {
+            width: 100%;
+            padding: 1.2rem;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: var(--neon-green); /* Botão preenchido da imagem */
+            border: none;
+            color: #000; /* Texto preto no botão verde */
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-entrar:hover {
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.6);
+            transform: translateY(-1px);
+        }
+
+        /* ==========================================================================
+           5. ESTADO "LIGADO" (A Magia Neon da Imagem)
+           ========================================================================== */
+
+        /* Acende o abajur */
+        body.is-on .lamp-shade::after {
+            opacity: 1; /* Vidro acende */
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 4px,
+                rgba(57, 255, 20, 0.3) 4px,
+                rgba(57, 255, 20, 0.3) 46px
+            );
+        }
+
+        body.is-on .neon-tubes {
+            opacity: 0.3; /* Tubos internos acendem */
+            animation: piscarNeon 0.1s ease-out forwards;
+        }
+
+        @keyframes piscarNeon {
+            0%   { opacity: 0; }
+            10%  { opacity: 0.1; } /* Choque inicial! */5
+            20%  { opacity: 0; } /* Pisca rápido */
+            30%  { opacity: 0.1; } /* Acende de novo */
+            70%  { opacity: 0.1; } /* Fica aceso segurando a energia */
+            100% { opacity: 0; } /* Apaga definitivamente aos 1.5 segundos */
+        }
+
+        /* Mostra o formulário com o brilho traseiro intenso */
+        body.is-on .login-overlay {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: all;
+        }
+
+        body.is-on .login-card {
+            border-color: rgba(57, 255, 20, 0.6);
+            /* Sombra verde forte por trás do card (igual à imagem) */
+            box-shadow:
+                0 0 100px rgba(57, 255, 20, 0.2),
+                0 0 40px rgba(57, 255, 20, 0.15),
+                0 20px 50px rgba(0,0,0,0.9);
+        }
+
+        /* Estado durante o arrasto da corda (Mostra a mão) */
+        body.is-dragging .pull-hand {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        body.is-dragging .pull-handle {
+            transform: scale(1.1);
+        }
+
     </style>
 </head>
-<body class="login-container">
+<body class="{% if form.errors %}is-on{% endif %}">
 
-    <div class="login-card card glass">
-        <h1 class="neon-title" style="font-size: 1.8rem; margin-bottom: 2rem;">DESAFIO 1.0 ACCESS</h1>
-
-        <form method="POST">
-            {% csrf_token %}
-
-            {% if form.errors %}
-                <p class="error-msg">Usuário ou senha incorretos.</p>
-            {% endif %}
-
-            <div class="input-box">
-                <input type="text" name="username" placeholder="Seu usuário" required>
+    <div class="lamp-assembly" style="top: calc(50% - 140px);">
+        <div class="lamp-shade">
+            <div class="neon-tubes">
+                <div class="tube"></div><div class="tube"></div><div class="tube"></div>
+                <div class="tube"></div><div class="tube"></div><div class="tube"></div>
             </div>
-
-            <div class="input-box">
-                <input type="password" name="password" placeholder="Sua senha" required>
-            </div>
-
-            <button type="submit" class="btn-neon">ENTRAR NO DESAFIO</button>
-        </form>
+        </div>
+        <div class="lamp-stem"></div>
+        <div class="lamp-base"></div>
     </div>
 
+    <div class="pull-mechanism" id="pullMechanism" style="top: calc(50% - 140px + 180px);">
+        <div class="pull-string" id="pullString"></div>
+
+        <div class="pull-handle">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 95L95 50L50 5L5 50L50 95Z" fill="#1a1a1d" stroke="#555" stroke-width="4"/>
+                <path d="M50 75L75 50L50 25L25 50L50 75Z" fill="#39ff14" opacity="0.8"/> </svg>
+        </div>
+
+        <div class="pull-hand" id="pullHand">
+            <svg viewBox="0 0 200 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M70 250C70 250 50 180 60 150C70 120 90 110 110 110C130 110 150 120 160 150C170 180 150 250 150 250H70Z" fill="#111" stroke="#333" stroke-width="2"/>
+                <circle cx="110" cy="80" r="15" fill="#222" stroke="#444" stroke-width="2"/> <circle cx="130" cy="95" r="15" fill="#1a1a1a" stroke="#444" stroke-width="2"/> <path d="M90 100C90 100 60 80 50 100C40 120 70 140 90 140" fill="#222" stroke="#444" stroke-width="2"/> <path d="M100 160L120 190L100 220" stroke="#39ff14" stroke-width="3" stroke-linecap="round" style="filter: drop-shadow(0 0 5px #39ff14);"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="login-overlay">
+        <div class="login-card">
+            <h1>DESAFIO 1.0</h1>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <p style="color: #ff4d4d; font-size: 0.9rem; margin-bottom: 2rem; font-weight: bold; text-shadow: 0 0 5px rgba(255,77,77,0.5);">
+                        Atleta ou senha incorretos.
+                    </p>
+                {% endif %}
+
+                <input type="text" name="username" class="glass-input" placeholder="ATLETA (username)" required autofocus>
+                <input type="password" name="password" class="glass-input" placeholder="SENHA" required>
+
+                <button type="submit" class="btn-entrar">ENTRAR</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const body = document.body;
+        const pullMechanism = document.getElementById('pullMechanism');
+        const pullString = document.getElementById('pullString');
+
+        let isDragging = false;
+        let startY = 0;
+        let originalStringHeight = 150; // Tamanho longo da corda da imagem
+        let maxPullDistance = 80; // Quanto o usuário consegue esticar
+
+        // Eventos para Mouse e Touch (Celular)
+        pullMechanism.addEventListener('mousedown', startPull);
+        pullMechanism.addEventListener('touchstart', startPull, {passive: false});
+
+        window.addEventListener('mouseup', endPull);
+        window.addEventListener('touchend', endPull);
+
+        window.addEventListener('mousemove', pullHandler);
+        window.addEventListener('touchmove', pullHandler, {passive: false});
+
+        function startPull(e) {
+            // Se já estiver ligado, ignora a cordinha (opcional, pode deixar para desligar também)
+            // if (body.classList.contains('is-on')) return;
+
+            isDragging = true;
+            body.classList.add('is-dragging'); // Ativa o estado de drag (mostra a mão no CSS)
+            pullString.style.transition = 'none'; // Desabilita animação para o drag ficar fluído
+
+            // Captura a posição Y inicial do clique (mouse ou dedo)
+            startY = (e.type === 'touchstart') ? e.touches[0].clientY : e.clientY;
+        }
+
+        function pullHandler(e) {
+            if (!isDragging) return;
+            e.preventDefault(); // Impede o scroll da página no mobile
+
+            const currentY = (e.type === 'touchmove') ? e.touches[0].clientY : e.clientY;
+            const pullDistance = currentY - startY;
+
+            // Só permite puxar para baixo e até o limite máximo
+            if (pullDistance > 0 && pullDistance < maxPullDistance) {
+                pullString.style.height = (originalStringHeight + pullDistance) + 'px';
+            }
+        }
+
+        function endPull() {
+            if (!isDragging) return;
+            isDragging = false;
+            body.classList.remove('is-dragging'); // Esconde a mão
+
+            // Reabilita transição para a cordinha voltar com efeito mola
+            pullString.style.transition = 'height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+
+            // Captura o ponto onde a cordinha parou
+            let currentHeight = parseInt(pullString.style.height);
+
+            // Se o usuário puxou pelo menos 20px, considera um "puxão" e LIGA a luz
+             if (currentHeight > originalStringHeight + 20) {
+                body.classList.toggle('is-on');
+            }
+
+            // A corda volta para o tamanho original
+            pullString.style.height = originalStringHeight + 'px';
+        }
+    </script>
 </body>
 </html>
